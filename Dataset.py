@@ -13,7 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Train Transformer for translation en to fr")
     parser.add_argument("--src_lang", "-slang", type=str, default="en")
     parser.add_argument("--tgt_lang", "-tlang", type=str, default="fr")
-    parser.add_argument("--tokenizer_file" "-tf", type=str, default="./tokenizer/tokenizer_{}")
+    parser.add_argument("--tokenizer_file", "-tf", type=str, default="./tokenizer_{}")
     arg = parser.parse_args()
     return arg
 
@@ -48,9 +48,21 @@ def get_dataset(args):
     len_val = len(ds) - len_train
     
     train_data, val_data = random_split(ds, [len_train, len_val])
-    return ds, train_data, val_data
+    return tokenizer_src_lang, tokenizer_tgt_lang, train_data, val_data
 
 if __name__ == "__main__":
     args = get_args()
 
-    ds_raw, train_data, val_data = get_or_build_tokenizer(args)
+    tokenizer_en_lang, tokenizer_fr_lang, train_data, val_data = get_dataset(args)
+
+    sentences = """
+    If I try to imagine that first night which I must have spent in my attic, 
+    amidst the lumber-rooms on the upper storey, I recall other nights; 
+    I am no longer alone in that room; a tall, restless, and friendly shadow moves along its walls and walks to and fro.
+    """
+
+    encoding = tokenizer_en_lang(sentences)
+    print(encoding)
+
+    decoding = tokenizer_en_lang(UnicodeEncodeError.ids)
+    print(decoding == sentences)
