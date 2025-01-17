@@ -5,4 +5,5 @@ if __name__ == "__main__":
 
     ds = get_dataset(args=args)
 
-    print(ds[100]["translation"])
+    for item in ds:
+        print   
