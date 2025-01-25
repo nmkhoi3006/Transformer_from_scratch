@@ -53,8 +53,8 @@ class TranslationData(Dataset):
         src_text = pair_lang["translation"][self.src_lang]
         tgt_text = pair_lang["translation"][self.tgt_lang]
 
-        src_token_input = torch.tensor([self.src_tokenizer.encode(src_text).ids], dtype=torch.int64)
-        tgt_token_input = torch.tensor([self.tgt_tokenizer.encode(tgt_text).ids], dtype=torch.int64)
+        src_token_input = self.src_tokenizer.encode(src_text).ids
+        tgt_token_input = self.tgt_tokenizer.encode(tgt_text).ids
 
         enc_num_pad_token = self.seq_len - len(src_token_input) - 2
         dec_num_pad_token = self.seq_len - len(tgt_token_input) - 1
@@ -62,9 +62,9 @@ class TranslationData(Dataset):
         encoder_input = torch.cat(
             [
                 self.sos_token,
-                src_token_input,
+                torch.tensor(src_token_input, dtype=torch.int64),
                 self.eos_token,
-                torch.tensor([self.pad_token * enc_num_pad_token], dtype=torch.int64)
+                torch.tensor([self.pad_token] * enc_num_pad_token, dtype=torch.int64)
             ],
             dim=0
         )
@@ -72,21 +72,30 @@ class TranslationData(Dataset):
         decoder_input = torch.cat(
             [
                 self.sos_token,
-                tgt_token_input,
-                torch.tensor([self.pad_token * dec_num_pad_token], dtype=torch.int64)
+                torch.tensor(tgt_token_input, dtype=torch.int64),
+                torch.tensor([self.pad_token] * dec_num_pad_token, dtype=torch.int64)
             ],
             dim=0
         )
 
         label = torch.cat(
             [
-                tgt_token_input,
+                torch.tensor(tgt_token_input, dtype=torch.int64),
                 self.eos_token,
-                torch.tensor([self.pad_token * dec_num_pad_token], dtype=torch.int64)
+                torch.tensor([self.pad_token] * dec_num_pad_token, dtype=torch.int64)
             ],
             dim=0
         )
+        # print(f"{enc_num_pad_token = }")
+        # print(f"{self.seq_len = }")
+        # print(f"{encoder_input.size(0) = }")
+
+        assert encoder_input.size(0) == self.seq_len
+        assert decoder_input.size(0) == self.seq_len
+        assert label.size(0) == self.seq_len
+
         look_ahead_mask = (torch.triu(torch.ones((1, self.seq_len, self.seq_len)), diagonal=1) == 0).int()
+
         encoder_mask = (encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).int() #(B, num_head, seq_len)
         decoder_mask = (decoder_input != self.pad_token).unsqueeze(0) & look_ahead_mask
 
@@ -101,6 +110,11 @@ class TranslationData(Dataset):
         }
 
 def get_dataset(args):
+    src_lang = args.src_lang
+    tgt_lang = args.tgt_lang
+    seq_len = args.seq_len
+    batch_size = args.batch_size
+
     ds = load_dataset("Helsinki-NLP/opus_books", f"{args.src_lang}-{args.tgt_lang}", split="train")
 
     tokenizer_src_lang = get_or_build_tokenizer(args, ds, args.src_lang)
@@ -109,22 +123,12 @@ def get_dataset(args):
     len_train = int(0.9*len(ds))
     len_val = len(ds) - len_train
     
-    train_data, val_data = random_split(ds, [len_train, len_val])
-    return tokenizer_src_lang, tokenizer_tgt_lang, train_data, val_data
+    train_ds, val_ds = random_split(ds, [len_train, len_val])
+    
+    train_data = TranslationData(train_ds, tokenizer_src_lang, tokenizer_tgt_lang, src_lang, tgt_lang, seq_len)
+    val_data = TranslationData(val_ds, tokenizer_src_lang, tokenizer_tgt_lang, src_lang, tgt_lang, seq_len)
 
-if __name__ == "__main__":
-    args = get_args()
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 
-    tokenizer_en_lang, tokenizer_fr_lang, train_data, val_data = get_dataset(args)
-
-    sentences = """
-    If I try to imagine that first night which I must have spent in my attic, 
-    amidst the lumber-rooms on the upper storey, I recall other nights; 
-    I am no longer alone in that room; a tall, restless, and friendly shadow moves along its walls and walks to and fro.
-    """
-
-    # # sentence = "Let's test this tokenizer."
-    encoding = tokenizer_en_lang.encode(sentences)
-    start, end = encoding.offsets[4]
-
-    print(tokenizer_en_lang.decode(encoding.ids))
+    return train_loader, val_loader, tokenizer_src_lang, tokenizer_tgt_lang
