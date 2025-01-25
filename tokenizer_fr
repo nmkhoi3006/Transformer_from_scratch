@@ -65,8 +65,18 @@
     "trim_offsets": true,
     "use_regex": true
   },
-  "post_processor": null,
-  "decoder": null,
+  "post_processor": {
+    "type": "ByteLevel",
+    "add_prefix_space": true,
+    "trim_offsets": false,
+    "use_regex": true
+  },
+  "decoder": {
+    "type": "ByteLevel",
+    "add_prefix_space": true,
+    "trim_offsets": true,
+    "use_regex": true
+  },
   "model": {
     "type": "BPE",
     "dropout": null,
