@@ -15,12 +15,12 @@ def get_all_sentences(ds, lang):
         yield item["translation"][lang]
 
 def get_or_build_tokenizer(args, ds, lang):
-    tokenizer_path = Path(args.tokenizer_file.format(lang))
+    tokenizer_path = Path(args["tokenizer_file"].format(lang))
     if not Path.exists(tokenizer_path):
         tokenizer = Tokenizer(BPE())
         tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=False)
         special_tokens = ["[UNK]", "[PAD]", "[EOS]", "[SOS]", "[MASK]", "[CLS]"]
-        trainer = BpeTrainer(vocab_size=args.vocab_size, special_tokens=special_tokens, min_frequency=2)
+        trainer = BpeTrainer(vocab_size=args["vocab_size"], special_tokens=special_tokens, min_frequency=2)
         tokenizer.train_from_iterator(get_all_sentences(ds, lang), trainer=trainer)
         tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
         tokenizer.decoder = decoders.ByteLevel()
@@ -115,7 +115,7 @@ def get_dataset(args):
     seq_len = args.seq_len
     batch_size = args.batch_size
 
-    ds = load_dataset("Helsinki-NLP/opus_wikipedia", f"{args.src_lang}-{args.tgt_lang}", split="train")
+    ds = load_dataset("Helsinki-NLP/opus_wikipedia", f"{args["src_lang"]}-{args["tgt_lang"]}", split="train")
 
     tokenizer_src_lang = get_or_build_tokenizer(args, ds, args.src_lang)
     tokenizer_tgt_lang = get_or_build_tokenizer(args, ds, args.tgt_lang)
@@ -133,14 +133,3 @@ def get_dataset(args):
 
     return train_loader, val_loader, tokenizer_src_lang, tokenizer_tgt_lang
 
-if __name__ == "__main__":
-    args = get_args()
-    train_loader, val_loader, tokenizer_src_lang, tokenizer_tgt_lang = get_dataset(args)
-
-    sentence = "Hôm nay tôi đi học"
-
-    encoding = tokenizer_tgt_lang.encode(sentence)
-    print(encoding.ids)
-
-    decoding = tokenizer_tgt_lang.decode(encoding.ids)
-    print(decoding)

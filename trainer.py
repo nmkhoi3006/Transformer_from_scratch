@@ -34,12 +34,12 @@ def gen_text(model: Transformer, encoder_input, encoder_mask, tokenizer_tgt_lang
     return decoder_input.squeeze(0)
 
 def train(args):
-    epochs = args.epochs
-    lr = args.learning_rate
-    vocab_size = args.vocab_size
-    seq_len = args.seq_len
-    src_lang = args.src_lang
-    tgt_lang = args.tgt_lang
+    epochs = args["epochs"]
+    lr = args["learning_rate"]
+    vocab_size = args["vocab_size"]
+    seq_len = args["seq_len"]
+    src_lang = args["src_lang"]
+    tgt_lang = args["tgt_lang"]
 
     weight_path = "./weight.pt"
 

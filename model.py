@@ -84,20 +84,3 @@ class Transformer(nn.Module):
     def project(self, x):
         x = self.projection_layer(x)
         return self.softmax(x)
-
-if __name__ == "__main__":  
-    vocab_size = 30000
-    max_seq_len = 200
-    d_model = 512
-    ff_dim = 2048
-    num_head = 8
-    drop_out = 0.1
-
-    num_encoder_block = 6
-    num_decoder_block = 6
-
-
-    src_text = torch.randint(low=0, high=10, size=(1, 15))
-    tgt_text = torch.randint(low=0, high=10, size=(1, 10))
-
-    
