@@ -44,7 +44,8 @@ class PositionEmbedding(nn.Module):
         # print(f"seq len: {self.seq_len}")
         # print(f"shape pe: {self.pe.shape}")
         seq_len = x.shape[1]
-        self.pe.to(x.device)
+        device = x.device
+        self.pe.to(device=device)
         x = x + (self.pe[:, :seq_len, :]).requires_grad_(False)
         return self.drop_out(x)
     
