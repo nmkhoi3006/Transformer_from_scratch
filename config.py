@@ -3,7 +3,7 @@ import argparse
 def get_args():
     parser = argparse.ArgumentParser(description="Train Transformer for translation en to fr")
     parser.add_argument("--src_lang", type=str, default="en")
-    parser.add_argument("--tgt_lang", type=str, default="fr")
+    parser.add_argument("--tgt_lang", type=str, default="vi")
     parser.add_argument("--tokenizer_file", type=str, default="./tokenizer_{}")
 
     # for training
