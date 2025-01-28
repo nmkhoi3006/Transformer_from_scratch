@@ -44,6 +44,7 @@ class PositionEmbedding(nn.Module):
         # print(f"seq len: {self.seq_len}")
         # print(f"shape pe: {self.pe.shape}")
         seq_len = x.shape[1]
+        self.pe.to(x.device)
         x = x + (self.pe[:, :seq_len, :]).requires_grad_(False)
         return self.drop_out(x)
     
@@ -75,6 +76,7 @@ class Attention(nn.Module):
         attention_score = self.softmax(attention) # (1, seq_len, seq_len)
 
         x = torch.matmul(attention_score, value)
+        x.to(q.device)
         # print(f"{x.shape=}")
         return x
 
@@ -107,6 +109,7 @@ class MultiHeadAttention(nn.Module):
         # print(f"{x.shape = }")
 
         x = self.scaled_dot_product(q, k, v, mask)
+        x.to(q.device)
         
         x = x.transpose(1, 2).reshape(x.shape[0], -1, self.d_model)
         x = self.w_0(x)

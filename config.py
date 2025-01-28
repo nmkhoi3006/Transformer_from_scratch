@@ -1,10 +1,10 @@
 def get_args():
     return{
-        "--src_lang": "en",
-        "--tgt_lang": "vi",
-        "--tokenizer_file": "./tokenizer_{}",
+        "src_lang": "en",
+        "tgt_lang": "vi",
+        "tokenizer_file": "./tokenizer_{}",
 
-        "--batch_size": 32,
+        "batch_size": 32,
         "learning_rate": 1e-4,
         "epochs": 100,
 
