@@ -110,15 +110,15 @@ class TranslationData(Dataset):
         }
 
 def get_dataset(args):
-    src_lang = args.src_lang
-    tgt_lang = args.tgt_lang
-    seq_len = args.seq_len
-    batch_size = args.batch_size
+    src_lang = args["src_lang"]
+    tgt_lang = args["tgt_lang"]
+    seq_len = args["seq_len"]
+    batch_size = args["batch_size"]
 
-    ds = load_dataset("Helsinki-NLP/opus_wikipedia", f"{args["src_lang"]}-{args["tgt_lang"]}", split="train")
+    ds = load_dataset("Helsinki-NLP/opus_wikipedia", f"{src_lang}-{tgt_lang}", split="train")
 
-    tokenizer_src_lang = get_or_build_tokenizer(args, ds, args.src_lang)
-    tokenizer_tgt_lang = get_or_build_tokenizer(args, ds, args.tgt_lang)
+    tokenizer_src_lang = get_or_build_tokenizer(args, ds, src_lang)
+    tokenizer_tgt_lang = get_or_build_tokenizer(args, ds, tgt_lang)
 
     len_train = int(0.9*len(ds))
     len_val = len(ds) - len_train
