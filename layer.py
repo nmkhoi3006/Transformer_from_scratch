@@ -46,7 +46,7 @@ class PositionEmbedding(nn.Module):
         seq_len = x.shape[1]
         device = x.device
         self.pe.to(device=device)
-        x = x + (self.pe[:, :seq_len, :]).requires_grad_(False)
+        x = x + (self.pe[:, :seq_len, :].to(device=device)).requires_grad_(False)
         return self.drop_out(x)
     
 class Attention(nn.Module):
